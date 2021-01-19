@@ -8,7 +8,7 @@ app.set("env", "production");
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to TEST API",
+    message: "Welcome to TEST API, Stella is a good girl, she is 18years old",
   });
 });
 
