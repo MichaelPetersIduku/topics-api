@@ -19,4 +19,55 @@ export class BillsController extends UniversalsController {
       this.controllerErrorHandler(req, res, error);
     }
   };
+
+  public airtimePurchase = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { ip, method, originalUrl, body } = req;
+    try {
+      const response = await new BillsService().processAirtimePurchase(
+        { ip, method, originalUrl },
+        body
+      );
+      this.controllerResponseHandler(response, res);
+    } catch (error) {
+      this.controllerErrorHandler(req, res, error);
+    }
+  };
+
+  public getVariations = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { ip, method, originalUrl, query } = req;
+    try {
+      const response = await new BillsService().processGetVariations(
+        { ip, method, originalUrl },
+        query
+      );
+      this.controllerResponseHandler(response, res);
+    } catch (error) {
+      this.controllerErrorHandler(req, res, error);
+    }
+  };
+
+  public productsPurchase = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { ip, method, originalUrl, body } = req;
+    try {
+      const response = await new BillsService().processProductsPurchase(
+        { ip, method, originalUrl },
+        body
+      );
+      this.controllerResponseHandler(response, res);
+    } catch (error) {
+      this.controllerErrorHandler(req, res, error);
+    }
+  };
 }

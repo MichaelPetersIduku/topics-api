@@ -36,7 +36,14 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^14.14.21",
-    "express": "^4.17.1"
+    "base-64": "^1.0.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "joi": "^17.3.0",
+    "node-fetch": "^2.6.1",
+    "randomatic": "^3.1.1",
+    "secreta": "^2.1.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

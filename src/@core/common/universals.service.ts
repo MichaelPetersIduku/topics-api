@@ -1,4 +1,5 @@
 import { IResponse } from "./response";
+import fetch from "node-fetch";
 
 export class UniversalsService {
   protected failureResponse = async (message?, data?): Promise<IResponse> => {
@@ -31,5 +32,20 @@ export class UniversalsService {
       message: "Internal server error",
       data: null,
     };
+  };
+
+  protected apiCall = async (api, body, headers, method, isXML?: boolean) => {
+    try {
+      let payLoad = { headers, method };
+      if (isXML === true) {
+        payLoad["body"] = body;
+      } else {
+        body ? (payLoad["body"] = JSON.stringify(body)) : payLoad;
+      }
+      const result = await fetch(api, payLoad);
+      return result;
+    } catch (error) {
+      this.serviceErrorHandler({ api, body, headers, method }, error);
+    }
   };
 }
