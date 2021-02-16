@@ -3,6 +3,7 @@ import { UniversalsService } from "../../@core/common/universals.service";
 import { config } from "secreta";
 import { encode } from "base-64";
 import randomize from "randomatic";
+import logger from "../../util/logger/logger";
 const {
   VTPASS_URL_TEST,
   VTPASS_URL_LIVE,
@@ -16,7 +17,7 @@ const VTPASS_HEADERS = {
 };
 export class BillsService extends UniversalsService {
   public processBills = (meta, body): Promise<IResponse> => {
-    console.log(meta, body);
+    logger.info(meta, body);
     try {
       return this.successResponse("Welcome to bills API", body);
     } catch (error) {

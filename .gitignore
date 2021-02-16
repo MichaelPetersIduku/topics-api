@@ -42,5 +42,5 @@ __my-test__
 
 # ignore yarn.lock
 yarn.lock
-# .secreta/secreta.json
-# .secreta/config.js
+.secreta/secreta.json
+.secreta/config.js
