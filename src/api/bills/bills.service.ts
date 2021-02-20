@@ -4,6 +4,8 @@ import { config } from "secreta";
 import { encode } from "base-64";
 import randomize from "randomatic";
 import logger from "../../util/logger/logger";
+import Transactions from "../transactions/transactions.model";
+import User from "../user/user.model";
 const {
   VTPASS_URL_TEST,
   VTPASS_URL_LIVE,
@@ -26,9 +28,15 @@ export class BillsService extends UniversalsService {
   };
 
   public processAirtimePurchase = async (meta, body): Promise<IResponse> => {
-    console.log(body);
-    const { serviceID, amount, phone } = body;
+    const { serviceID, amount, phone, xMobile, password } = body;
     try {
+      const isUserValid4Transaction = await this.isUserValid4Transaction(
+        xMobile,
+        password,
+        amount
+      );
+      const { status, message, data } = isUserValid4Transaction;
+      if (!status) return this.failureResponse(message, data);
       const body = {
         request_id: randomize("*", "7"),
         serviceID,
@@ -43,6 +51,27 @@ export class BillsService extends UniversalsService {
       );
       const responseData = await response.json();
       if (responseData.content.transactions.status === "delivered") {
+        //debit user
+        const { wallet, _id } = data;
+        const updatedWallet = this.debitWallet(wallet, amount);
+        const updatedUser = await User.findOneAndUpdate(
+          { _id },
+          { $set: { wallet: updatedWallet } },
+          { new: true, projection: { password: 0 } }
+        );
+        logger.info(updatedUser);
+        //save transaction
+        await Transactions.create({
+          amount,
+          beneficiary: {
+            fullName: `${serviceID} - ${phone}`,
+            uid: "",
+            xMobile: phone,
+          },
+          narration: `${serviceID} airtime purchase`,
+          type: "Bills",
+          uid: data._id,
+        });
         return this.successResponse(
           "Airtime purchase was successful",
           responseData
@@ -74,9 +103,24 @@ export class BillsService extends UniversalsService {
   };
 
   public processProductsPurchase = async (meta, body) => {
-    const { serviceID, billersCode, variationCode, amount, phone } = body;
+    const {
+      serviceID,
+      billersCode,
+      variationCode,
+      amount,
+      phone,
+      xMobile,
+      password,
+    } = body;
     const url = `${VTPASS_URL}pay`;
     try {
+      const isUserValid4Transaction = await this.isUserValid4Transaction(
+        xMobile,
+        password,
+        amount
+      );
+      const { status, message, data } = isUserValid4Transaction;
+      if (!status) return this.failureResponse(message, data);
       const reqBody = {
         request_id: randomize("*", "7"),
         serviceID,
@@ -88,6 +132,27 @@ export class BillsService extends UniversalsService {
       const response = await this.apiCall(url, reqBody, VTPASS_HEADERS, "POST");
       const responseData = await response.json();
       if (responseData.content.transactions.status === "delivered") {
+        //debit user
+        const { wallet, _id } = data;
+        const updatedWallet = this.debitWallet(wallet, amount);
+        const updatedUser = await User.findOneAndUpdate(
+          { _id },
+          { $set: { wallet: updatedWallet } },
+          { new: true, projection: { password: 0 } }
+        );
+        logger.info(updatedUser);
+        //save transaction
+        await Transactions.create({
+          amount,
+          beneficiary: {
+            fullName: `${serviceID} - ${phone}`,
+            uid: "",
+            xMobile: phone,
+          },
+          narration: `${serviceID} purchase`,
+          type: "Bills",
+          uid: data._id,
+        });
         return this.successResponse(
           responseData.response_description,
           responseData.content

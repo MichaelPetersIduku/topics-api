@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { UniversalsController } from "../../@core/common/universals.controller";
-import { UserService } from "./user.service";
+import { CardsService } from "./cards.service";
 
-export class UserController extends UniversalsController {
-  public users = async (
+export class CardsController extends UniversalsController {
+  public cards = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { ip, method, originalUrl } = req;
     try {
-      const response = await new UserService().users(
+      const response = await new CardsService().cards(
         { ip, method, originalUrl },
         req
       );
@@ -20,14 +20,14 @@ export class UserController extends UniversalsController {
     }
   };
 
-  public registerUser = async (
+  public addCard = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { ip, method, originalUrl } = req;
     try {
-      const response = await new UserService().registerUser(
+      const response = await new CardsService().addCard(
         { ip, method, originalUrl },
         req
       );
@@ -37,14 +37,14 @@ export class UserController extends UniversalsController {
     }
   };
 
-  public sendSMS = async (
+  public resolveCardAccount = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { ip, method, originalUrl } = req;
     try {
-      const response = await new UserService().sendSMS(
+      const response = await new CardsService().resolveCardAccount(
         { ip, method, originalUrl },
         req
       );
@@ -54,14 +54,14 @@ export class UserController extends UniversalsController {
     }
   };
 
-  public sendOTP = async (
+  public deleteCard = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { ip, method, originalUrl } = req;
     try {
-      const response = await new UserService().sendOTP(
+      const response = await new CardsService().deleteCard(
         { ip, method, originalUrl },
         req
       );
@@ -71,31 +71,14 @@ export class UserController extends UniversalsController {
     }
   };
 
-  public loginUser = async (
+  public getAllUserCards = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { ip, method, originalUrl } = req;
     try {
-      const response = await new UserService().loginUser(
-        { ip, method, originalUrl },
-        req
-      );
-      this.controllerResponseHandler(response, res);
-    } catch (error) {
-      this.controllerErrorHandler(req, res, error);
-    }
-  };
-
-  public getUserByxMobile = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    const { ip, method, originalUrl } = req;
-    try {
-      const response = await new UserService().getUserByxMobile(
+      const response = await new CardsService().getAllUserCards(
         { ip, method, originalUrl },
         req
       );

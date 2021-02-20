@@ -3,16 +3,13 @@ import mongoosePaginate from "mongoose-paginate-v2";
 
 export const UserSchema = new Schema(
   {
-    mobileNumber: String,
-    firstName: String,
-    middleName: String,
-    lastName: String,
-    bvn: String,
-    dateOfBirth: String,
-    emailAddress: String,
-    gender: String,
+    xMobile: String,
+    fName: String,
+    sName: String,
+    dob: String,
+    email: String,
+    sex: String,
     wallet: Schema.Types.Mixed,
-    pin: String,
     password: String,
   },
   { timestamps: true }
@@ -31,6 +28,6 @@ UserSchema.index(
 
 UserSchema.plugin(mongoosePaginate);
 
-const User: any = model("users", UserSchema);
+const User = model("users", UserSchema);
 
 export default User;
