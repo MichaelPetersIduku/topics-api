@@ -3,12 +3,12 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import { billsRouter } from "./api/bills/bills.route";
-import { connectMongo } from "./@core/database/database.mongo";
 import logger from "./util/logger/logger";
 import { userRouter } from "./api/user/user.route";
 import { walletRouter } from "./api/wallet/wallet.route";
 import { transactionsrouter } from "./api/transactions/transactions.route";
 import { cardsRouter } from "./api/cards/cards.route";
+import { connectPostgres } from "./@core/database/database.postgres";
 
 // create express server
 const app: Application = express();
@@ -34,8 +34,8 @@ process.on("unhandledRejection", (e: any) => {
   process.exit(1);
 });
 
-//connect mongo database
-connectMongo();
+//connect postgres database
+connectPostgres();
 
 //Routes
 app.use("/api/v1/bills", billsRouter);
