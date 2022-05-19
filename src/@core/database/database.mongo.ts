@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { config } from "secreta";
 import { loadQuestionsData, loadTopicsData } from "../../util/util";
+import { connectRedis } from "./redis-client";
 
 const { MONGODB_URL } = config;
 const { connection } = mongoose;
@@ -25,6 +26,8 @@ connection.on("error", (error: any) => {
 connection.once("open", async function () {
   // app.locals.db = connection.db.collection("agendaJobs");
 
+  // connect redis client
+  // connectRedis();
   // fetch data from google sheet
   await loadTopicsData();
   await loadQuestionsData();

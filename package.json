@@ -50,6 +50,7 @@
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "randomatic": "^3.1.1",
+    "redis": "^4.1.0",
     "secreta": "^2.1.0",
     "sequelize": "^6.19.0",
     "winston": "^3.3.3"

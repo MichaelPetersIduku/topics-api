@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import Question from "../@core/database/models/questions.model";
 import Topics from "../@core/database/models/topics.model";
+import { cacheData } from "../@core/database/redis-client";
 const { config } = require("secreta");
 
 const { SPREADSHEET_DOC } = config;
@@ -56,8 +57,10 @@ export const loadTopicsData = async () => {
         children: children.filter((child) => child.topicname === topic),
       };
     });
-    // console.log(parent);
-    await Topics.insertMany(parent);
+
+    // const cacheRes = await cacheData({varName: 'Topics', varValue: parent});
+    // console.log(cacheRes);
+    await storeTopicsToDB(parent);
   } catch (error) {
     return error;
   }
@@ -84,7 +87,7 @@ export const loadQuestionsData = async () => {
     // Remove all empty strings from inner array
     const data: any = readData.data.values?.map((item) => item.filter((i) => i));
     data?.splice(0, 1);
-    console.log(data);
+    // console.log(data);
 
     let questionNumber;
 
@@ -112,7 +115,7 @@ export const loadQuestionsData = async () => {
       }
     }))
 
-    console.log(questions, "Questions");
+    // console.log(questions, "Questions");
 
     let cleanedQuestions = questions.map(question => {
       const all = questions.filter(q => q.questionNumber === question.questionNumber);
@@ -123,10 +126,27 @@ export const loadQuestionsData = async () => {
     })
     cleanedQuestions = [...Array.from(new Map(cleanedQuestions.map(item => [item['questionNumber'], item])).values())]
 
-    console.log("Cleaned Questions", cleanedQuestions);
-
-    await Question.insertMany(cleanedQuestions);
+    // console.log("Cleaned Questions", cleanedQuestions);
+    // const cacheRes = await cacheData({varName: 'Questions', varValue: parent});
+    // console.log(cacheRes);
+    await storeQuestionsToDB(cleanedQuestions);
   } catch (error) {
     return error;
   }
 };
+
+export const storeQuestionsToDB = async (questions) => {
+  try {
+    await Question.insertMany(questions);
+  } catch (error) {
+    return error;
+  }
+}
+
+export const storeTopicsToDB = async (topics) => {
+  try {
+    await Topics.insertMany(topics);
+  } catch (error) {
+    return error;
+  }
+}
