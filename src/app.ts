@@ -41,7 +41,7 @@ app.use("/api/v1/questions", questionsRouter);
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to Vendease movies api",
+    message: "Welcome to Topics Questions api",
   });
 });
 
