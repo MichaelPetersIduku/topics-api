@@ -3,7 +3,6 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import logger from "./util/logger/logger";
-import { connectPostgres } from "./@core/database/database.postgres";
 import { connectMongo } from "./@core/database/database.mongo";
 import { questionsRouter } from "./api/questions/questions.route";
 
