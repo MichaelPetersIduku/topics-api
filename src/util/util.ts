@@ -58,8 +58,8 @@ export const loadTopicsData = async () => {
       };
     });
 
-    // const cacheRes = await cacheData({varName: 'Topics', varValue: parent});
-    // console.log(cacheRes);
+    const cacheRes = await cacheData({varName: 'Topics', varValue:JSON.stringify(parent)});
+    console.log(cacheRes);
     await storeTopicsToDB(parent);
   } catch (error) {
     return error;
@@ -127,8 +127,8 @@ export const loadQuestionsData = async () => {
     cleanedQuestions = [...Array.from(new Map(cleanedQuestions.map(item => [item['questionNumber'], item])).values())]
 
     // console.log("Cleaned Questions", cleanedQuestions);
-    // const cacheRes = await cacheData({varName: 'Questions', varValue: parent});
-    // console.log(cacheRes);
+    const cacheRes = await cacheData({varName: 'Questions', varValue: JSON.stringify(cleanedQuestions)});
+    console.log(cacheRes);
     await storeQuestionsToDB(cleanedQuestions);
   } catch (error) {
     return error;

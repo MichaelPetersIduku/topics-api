@@ -50,6 +50,7 @@ RedisClient.on("error", (err: any) => {
 });
 
 export const cacheData = async (cacheVariables: ICacheVariable) => {
+  try {
   const { varName, varValue } = cacheVariables;
   const setAsync = promisify(RedisClient.set).bind(RedisClient);
   if (!varName) {
@@ -92,6 +93,9 @@ export const cacheData = async (cacheVariables: ICacheVariable) => {
     success: false,
     message: "caching was not succesfull",
   };
+} catch (error) {
+  console.log("REDIS ERROR", error)
+}
 };
 
 export const getVariable = async (varName: string) => {

@@ -27,9 +27,9 @@ connection.once("open", async function () {
   // app.locals.db = connection.db.collection("agendaJobs");
 
   // connect redis client
-  // connectRedis();
+  connectRedis();
   // fetch data from google sheet
-  await loadTopicsData();
-  await loadQuestionsData();
+  // await loadTopicsData();
+  // await loadQuestionsData();
   console.log("MongoDB database connection opened successfully.");
 });
