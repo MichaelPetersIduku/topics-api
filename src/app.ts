@@ -2,13 +2,10 @@ import express, { Request, Response, Application } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { billsRouter } from "./api/bills/bills.route";
 import logger from "./util/logger/logger";
-import { userRouter } from "./api/user/user.route";
-import { walletRouter } from "./api/wallet/wallet.route";
-import { transactionsrouter } from "./api/transactions/transactions.route";
-import { cardsRouter } from "./api/cards/cards.route";
 import { connectPostgres } from "./@core/database/database.postgres";
+import { connectMongo } from "./@core/database/database.mongo";
+import { questionsRouter } from "./api/questions/questions.route";
 
 // create express server
 const app: Application = express();
@@ -35,18 +32,17 @@ process.on("unhandledRejection", (e: any) => {
 });
 
 //connect postgres database
-connectPostgres();
+// connectPostgres();
+
+// connect mongo database
+connectMongo();
 
 //Routes
-app.use("/api/v1/bills", billsRouter);
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/wallets", walletRouter);
-app.use("/api/v1/transactions", transactionsrouter);
-app.use("/api/v1/cards", cardsRouter);
+app.use("/api/v1/questions", questionsRouter);
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to TEST API, Stella is a good girl, she is 18years old",
+    message: "Welcome to Vendease movies api",
   });
 });
 

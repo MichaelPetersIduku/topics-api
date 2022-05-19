@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { config } from "secreta";
+import { loadQuestionsData, loadTopicsData } from "../../util/util";
 
 const { MONGODB_URL } = config;
 const { connection } = mongoose;
@@ -12,7 +13,7 @@ export const connectMongo = () => {
     useUnifiedTopology: true,
     useCreateIndex: true,
     useFindAndModify: false,
-    autoIndex: false,
+    autoIndex: true,
   });
 };
 
@@ -21,7 +22,11 @@ connection.on("error", (error: any) => {
   throw error;
 });
 
-connection.once("open", function () {
-  app.locals.db = connection.db.collection("agendaJobs");
+connection.once("open", async function () {
+  // app.locals.db = connection.db.collection("agendaJobs");
+
+  // fetch data from google sheet
+  await loadTopicsData();
+  await loadQuestionsData();
   console.log("MongoDB database connection opened successfully.");
 });
