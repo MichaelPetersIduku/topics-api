@@ -41,6 +41,7 @@
     "bcrypt": "^5.0.0",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
+    "escape-string-regexp-node": "^1.0.2",
     "express": "^4.17.1",
     "googleapis": "^100.0.0",
     "joi": "^17.3.0",

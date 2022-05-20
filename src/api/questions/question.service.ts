@@ -2,6 +2,8 @@ import { IResponse } from "../../@core/common/response";
 import { UniversalsService } from "../../@core/common/universals.service";
 import Question from "../../@core/database/models/questions.model";
 import Topics from "../../@core/database/models/topics.model";
+import escapeStringRegexp from 'escape-string-regexp-node';
+
 
 export class QuestionsService extends UniversalsService {
   public getQuestions = async (meta, req): Promise<IResponse> => {
@@ -11,13 +13,13 @@ export class QuestionsService extends UniversalsService {
       // Get all topics that matches the query
       const topics = await Topics.find({
         $or: [
-          { "children.children.name": { $regex: q, $options: "i" } },
-          { "children.name": { $regex: q, $options: "i" } },
-          { name: { $regex: q, $options: "i" } },
+          { "children.children.name": { $regex: escapeStringRegexp(q), $options: "i" } },
+          { "children.name": { $regex: escapeStringRegexp(q), $options: "i" } },
+          { name: { $regex: escapeStringRegexp(q), $options: "i" } },
         ],
       });
 
-      const qRegExp = new RegExp(q, 'i');
+      const qRegExp = new RegExp(escapeStringRegexp(q), 'i');
 
       const topic_ids = topics
         .flatMap((topic) => {
