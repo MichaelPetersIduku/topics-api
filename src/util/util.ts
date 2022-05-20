@@ -174,11 +174,11 @@ export const loadQuestionsData = async () => {
 
     await storeQuestionsToDB(cleanedQuestions);
 
-    // const cacheRes = await cacheData({
-    //   varName: "Questions",
-    //   varValue: JSON.stringify(cleanedQuestions),
-    // });
-    // console.log(cacheRes);
+    const cacheRes = await cacheData({
+      varName: "Questions",
+      varValue: JSON.stringify(cleanedQuestions),
+    });
+    console.log(cacheRes);
   } catch (error) {
     return error;
   }
