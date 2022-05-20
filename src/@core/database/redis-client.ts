@@ -33,7 +33,7 @@ RedisClient.on("connect", async () => {
     reloadData = setInterval(async () => {
         await loadTopicsData();
         await loadQuestionsData();
-    }, 1800)
+    }, 1800000)
   } else {
       console.log("Gotten from redis");
       await storeQuestionsToDB(questions?.value);

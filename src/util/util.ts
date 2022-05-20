@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { v4 as uuidv4 } from "uuid";
 import Question from "../@core/database/models/questions.model";
 import Topics from "../@core/database/models/topics.model";
 import { cacheData } from "../@core/database/redis-client";
@@ -10,6 +11,8 @@ console.log(SPREADSHEET_DOC, "KSKKSKS");
 
 export const loadTopicsData = async () => {
   try {
+    console.log(SPREADSHEET_DOC, "ddjdjdjdjd");
+
     const auth = new google.auth.GoogleAuth({
       keyFile: "src/@core/creds/client_secret.json", // the key file
       // url to spreadsheets API
@@ -25,6 +28,8 @@ export const loadTopicsData = async () => {
       spreadsheetId: SPREADSHEET_DOC, // spreadsheet id
       range: "Topics", // range of cells to read from.
     });
+
+    console.log(JSON.stringify(readData.data.values), "THEEEEEEEEMMMMMMMMMMMM");
 
     const data = readData.data.values?.map((data) => ({
       ...data.filter((i) => i.trim()),
@@ -46,11 +51,14 @@ export const loadTopicsData = async () => {
         children: data
           ?.filter((item) => item["1"] === topic)
           .map((i) => {
-            if (!!i["2"]) return { name: i["2"].trim(), children: [] };
+            if (!!i["2"])
+              return { name: i["2"].trim(), children: [], _id: uuidv4() };
           })
           .filter((x) => x),
       };
     });
+    console.log(JSON.stringify(children), "CHILDREN");
+
     const parent = Array.from(topics).map((topic) => {
       return {
         name: topic,
@@ -58,10 +66,15 @@ export const loadTopicsData = async () => {
       };
     });
 
-    const cacheRes = await cacheData({varName: 'Topics', varValue:JSON.stringify(parent)});
-    console.log(cacheRes);
     await storeTopicsToDB(parent);
+
+    const cacheRes = await cacheData({
+      varName: "Topics",
+      varValue: JSON.stringify(parent),
+    });
+    console.log(cacheRes);
   } catch (error) {
+    console.log(error);
     return error;
   }
 };
@@ -85,51 +98,87 @@ export const loadQuestionsData = async () => {
     });
 
     // Remove all empty strings from inner array
-    const data: any = readData.data.values?.map((item) => item.filter((i) => i));
+    const data: any = readData.data.values?.map((item) =>
+      item.filter((i) => i)
+    );
     data?.splice(0, 1);
     // console.log(data);
 
     let questionNumber;
 
-    const d = data.flat().map((question) => {
-      question = question.trim();
-      if (isNaN(question.trim())) {
-        return {
-          questionNumber: questionNumber,
-          question: question
-        }
-      } else {
+    const d = data
+      .flat()
+      .map((question) => {
+        question = question.trim();
+        if (isNaN(question.trim())) {
+          return {
+            questionNumber: questionNumber,
+            question: question,
+          };
+        } else {
           questionNumber = question;
-      }
-    }).filter(i => i);
-    const questions = await Promise.all(d.map(async (questn) => {
-      const topicData = await Topics.find({
-      $or: [
-      {"children.children.name": questn.question},
-      {"children.name": questn.question}
-      ]
-    });
-      return {
-        questionNumber: questn.questionNumber,
-        topic_ids: topicData.map(topic => topic._id)
-      }
-    }))
+        }
+      })
+      .filter((i) => i);
+    const questions = await Promise.all(
+      d.map(async (questn) => {
+        const topicData = await Topics.find({
+          $or: [
+            { "children.children.name": questn.question },
+            { "children.name": questn.question },
+          ],
+        });
+        const topic_ids = topicData
+          .flatMap((topic) => {
+            if (topic.name === questn.question) return [topic._id];
+            const childrenTopicIds = topic.children
+              .filter((child) => child.name === questn.question)
+              .map((c) => c._id);
+            if (childrenTopicIds.length > 0) return childrenTopicIds;
+            const grandChildrenTopicIds = topic.children.flatMap((child) => {
+              return child.children
+                .filter((gchild) => gchild.name === questn.question)
+                .map((gc) => gc._id);
+            });
+            if (grandChildrenTopicIds.length > 0) return grandChildrenTopicIds;
+          })
+          .filter((i) => i);
 
-    // console.log(questions, "Questions");
+        return {
+          questionNumber: questn.questionNumber,
+          topic_ids,
+        };
+      })
+    );
 
-    let cleanedQuestions = questions.map(question => {
-      const all = questions.filter(q => q.questionNumber === question.questionNumber);
+    console.log(questions, "Questions");
+
+    let cleanedQuestions = questions.map((question) => {
+      const all = questions.filter(
+        (q) => q.questionNumber === question.questionNumber
+      );
       return {
         questionNumber: question.questionNumber,
-        topic_ids: all.flatMap(question => question.topic_ids)
-      }
-    })
-    cleanedQuestions = [...Array.from(new Map(cleanedQuestions.map(item => [item['questionNumber'], item])).values())]
+        topic_ids: all.flatMap((question) => question.topic_ids),
+      };
+    });
+    cleanedQuestions = [
+      ...Array.from(
+        new Map(
+          cleanedQuestions.map((item) => [item["questionNumber"], item])
+        ).values()
+      ),
+    ];
 
-    // console.log("Cleaned Questions", cleanedQuestions);
-    const cacheRes = await cacheData({varName: 'Questions', varValue: JSON.stringify(cleanedQuestions)});
-    console.log(cacheRes);
+    console.log("Cleaned Questions", cleanedQuestions);
+
     await storeQuestionsToDB(cleanedQuestions);
+
+    // const cacheRes = await cacheData({
+    //   varName: "Questions",
+    //   varValue: JSON.stringify(cleanedQuestions),
+    // });
+    // console.log(cacheRes);
   } catch (error) {
     return error;
   }
@@ -141,7 +190,7 @@ export const storeQuestionsToDB = async (questions) => {
   } catch (error) {
     return error;
   }
-}
+};
 
 export const storeTopicsToDB = async (topics) => {
   try {
@@ -149,4 +198,4 @@ export const storeTopicsToDB = async (topics) => {
   } catch (error) {
     return error;
   }
-}
+};

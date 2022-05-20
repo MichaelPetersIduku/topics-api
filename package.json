@@ -53,6 +53,7 @@
     "redis": "^4.1.0",
     "secreta": "^2.1.0",
     "sequelize": "^6.19.0",
+    "uuid": "^8.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {

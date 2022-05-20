@@ -2,31 +2,47 @@ import { IResponse } from "../../@core/common/response";
 import { UniversalsService } from "../../@core/common/universals.service";
 import Question from "../../@core/database/models/questions.model";
 import Topics from "../../@core/database/models/topics.model";
-import logger from "../../util/logger/logger";
 
 export class QuestionsService extends UniversalsService {
   public getQuestions = async (meta, req): Promise<IResponse> => {
-    const { q } = req.query;
+    let { q } = req.query;
+    q = q.toLowerCase().trim();
     try {
       // Get all topics that matches the query
       const topics = await Topics.find({
         $or: [
-          { "children.children.name": q },
-          { "children.name": q },
-          { name: q },
+          { "children.children.name": { $regex: q, $options: "i" } },
+          { "children.name": { $regex: q, $options: "i" } },
+          { name: { $regex: q, $options: "i" } },
         ],
       });
 
-      const topic_ids = topics.map((topic) => topic._id);
+      const qRegExp = new RegExp(q, 'i');
+
+      const topic_ids = topics
+        .flatMap((topic) => {
+          if (qRegExp.test(topic.name)) return [topic._id];
+          const childrenTopicIds = topic.children
+            .filter((child) => qRegExp.test(child.name))
+            .map((c) => c._id);
+          if (childrenTopicIds.length > 0) return childrenTopicIds;
+          const grandChildrenTopicIds = topic.children.flatMap((child) => {
+            return child.children
+              .filter((gchild) => qRegExp.test(gchild.name))
+              .map((gc) => gc._id);
+          });
+          if (grandChildrenTopicIds.length > 0) return grandChildrenTopicIds;
+        })
+        .filter((i) => i);
 
       const questions = await Question.find(
         {
-          topic_ids: { $all: topic_ids },
+          topic_ids: { $in: topic_ids },
         },
-        { questionNumber: 1}
+        { questionNumber: 1 }
       );
 
-      console.log(topics, "LENGTH", questions);
+      console.log(topics, "LENGTH", questions, topic_ids, qRegExp.test('chloroplasts and'));
 
       //   if (!user) return this.failureResponse("Failed to register user");
       return this.successResponse("Successful", questions);
