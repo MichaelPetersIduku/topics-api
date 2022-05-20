@@ -27,20 +27,34 @@ RedisClient.on("connect", async () => {
   console.log(`${new Date()} - redis.connection.connected`);
   const topics = await getVariable("Topics");
   const questions = await getVariable("Questions");
+  
   if (!topics?.success && !questions?.success) {
       console.log("Gotten from sheet");
-    // fetch data from google sheet
-    reloadData = setInterval(async () => {
-        await loadTopicsData();
-        await loadQuestionsData();
-    }, 1800000)
+    // fetch data from google sheet immediately
+    fetchDataFromSheet(1800000, true);
   } else {
       console.log("Gotten from redis");
       await storeQuestionsToDB(questions?.value);
-      await storeTopicsToDB(topics?.value)
+      await storeTopicsToDB(topics?.value);
+
+      // Reload the data after 30mins
+      fetchDataFromSheet(1800000);
   }
   console.log(topics, questions);
 });
+
+const fetchDataFromSheet = async (interval, forceStart = false) => {
+  if (forceStart) {
+    console.log("Fetching data")
+      await loadTopicsData();
+      await loadQuestionsData();
+  }
+  reloadData = setInterval(async () => {
+    console.log("Fetching data")
+      await loadTopicsData();
+      await loadQuestionsData();
+  }, interval)
+}
 
 RedisClient.on("error", (err: any) => {
   console.error(`${new Date()} - redis.connection.failed :::: ${err.message}`);
@@ -50,6 +64,7 @@ RedisClient.on("error", (err: any) => {
 });
 
 export const cacheData = async (cacheVariables: ICacheVariable) => {
+  console.log("LSKDKDKDKKDKJFHHSBDHBJHDBJHV")
   try {
   const { varName, varValue } = cacheVariables;
   const setAsync = promisify(RedisClient.set).bind(RedisClient);

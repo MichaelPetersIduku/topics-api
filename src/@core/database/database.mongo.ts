@@ -27,7 +27,7 @@ connection.once("open", async function () {
   // app.locals.db = connection.db.collection("agendaJobs");
 
   // connect redis client
-  connectRedis();
+  await connectRedis();
   // fetch data from google sheet
   // await loadTopicsData();
   // await loadQuestionsData();
